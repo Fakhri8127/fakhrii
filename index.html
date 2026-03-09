@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lib Noise Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <style>
+        body { background: #0a0a0c; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 20px; width: 300px; text-align: center; border: 1px solid #333; }
+        .bar-bg { background: #222; height: 15px; border-radius: 10px; margin: 10px 0 20px 0; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: width 0.2s; }
+        button { background: #00f2ff; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Library Monitor</h2>
+    <p>Aura / Hening</p>
+    <div class="bar-bg"><div id="bar-ganteng" class="bar-fill" style="background: #00f2ff;"></div></div>
+    
+    <p>Noise Level</p>
+    <div class="bar-bg"><div id="bar-berisik" class="bar-fill" style="background: #ff007a;"></div></div>
+    
+    <button onclick="init()">START</button>
+    <p id="status" style="font-size: 10px; margin-top: 15px;">Ready</p>
+</div>
+
+<script>
+    // MASUKKAN LINK KAMU DI BAWAH INI
+    const URL = "https://teachablemachine.withgoogle.com/models/31f4h44Qs/";
+
+    async function init() {
+        const recognizer = speechCommands.create("BROWSER_FFT", undefined, URL + "model.json", URL + "metadata.json");
+        await recognizer.ensureModelLoaded();
+        const labels = recognizer.wordLabels();
+        document.getElementById("status").innerText = "Listening...";
+
+        recognizer.listen(result => {
+            const scores = result.scores;
+            labels.forEach((label, i) => {
+                const prob = (scores[i] * 100).toFixed(0) + "%";
+                
+                // Sesuai label di TM kamu:
+                if (label === "Background Noise") {
+                    document.getElementById("bar-ganteng").style.width = prob;
+                } else if (label === "berisik") {
+                    document.getElementById("bar-berisik").style.width = prob;
+                }
+            });
+        }, { probabilityThreshold: 0.75 });
+    }
+</script>
+</body>
+</html>
